@@ -13,6 +13,12 @@ static Node *new_binary(NodeKind kind, Node *lhs, Node *rhs) {
     return node;
 }
 
+static Node *new_unary(NodeKind kind, Node *expr) {
+    Node *node = new_node(kind);
+    node->lhs = expr;
+    return node;
+}
+
 static Node *new_num(long val) {
     Node *node = new_node(ND_NUM);
     node->val = val;
@@ -28,6 +34,7 @@ static Node *mul(void);
 static Node *unary(void);
 static Node *primary(void);
 
+// program = stmt*
 Node *program(void) {
     Node head = {};
     Node *cur = &head;
@@ -40,16 +47,26 @@ Node *program(void) {
     return head.next;
 }
 
+// stmt = "return" expr ";"
+//          | expr ";"
 static Node *stmt(void) {
+    if (consume("return")) {
+        Node *node = new_unary(ND_RETURN, expr());
+        expect(";");
+        return node;
+    }
+
     Node *node = expr();
     expect(";");
     return node;
 }
 
+// expr = equality
 static Node *expr(void) {
     return equality();
 }
 
+// equality = relational ("==" relational | "!=" relational)*
 static Node *equality(void) {
     Node *node = relational();
 
@@ -64,6 +81,7 @@ static Node *equality(void) {
     }
 }
 
+// relational = add ("<" add | "<=" add | ">" add | ">=" add)*
 static Node *relational(void) {
     Node *node = add();
 
@@ -82,6 +100,7 @@ static Node *relational(void) {
     }
 }
 
+// add = mul ("+" mul | "-" mul)*
 static Node *add(void) {
     Node *node = mul();
 
@@ -96,6 +115,7 @@ static Node *add(void) {
     }
 }
 
+// mul = unary ("*" unary | "/" unary)*
 static Node *mul(void) {
     Node *node = unary();
 
@@ -110,6 +130,8 @@ static Node *mul(void) {
     }
 }
 
+// unary = ("+" | "-")? unary
+//       | primary
 static Node *unary(void) {
     if (consume("+")) {
         return unary();
@@ -120,6 +142,7 @@ static Node *unary(void) {
     return primary();
 }
 
+// primary = "(" expr ")" | num
 static Node *primary(void) {
     if (consume("(")) {
         Node *node = expr();
