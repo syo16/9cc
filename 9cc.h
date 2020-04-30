@@ -48,13 +48,14 @@ typedef enum {
 typedef struct Node Node;
 
 struct Node {
-    NodeKind kind;
-    Node *lhs;
-    Node *rhs;
-    long val;
+    NodeKind kind; // Node kind
+    Node *next; // Next node
+    Node *lhs; // Left-hand side
+    Node *rhs; // Right-hand side
+    long val; // Used if kind == ND_NUM
 };
 
 
-Node *expr(void);
+Node *program(void);
 
 void codegen(Node *node);
