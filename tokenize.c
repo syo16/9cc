@@ -83,6 +83,24 @@ static bool is_alnum(char c) {
     return is_alpha(c) || ('0' <= c && c <= '9');
 }
 
+static char *starts_with_reserved(char *p) {
+    static char *kw[] = {"return", "if", "else"};
+
+    for (int i = 0; i < sizeof(kw) / sizeof(*kw); i++) {
+        int len = strlen(kw[i]);
+        if (startswith(p, kw[i]) && !is_alnum(p[len]))
+            return kw[i];
+    }
+
+    static char *ops[] = {"==", "!=", "<=", ">="};
+
+    for (int i = 0; i < sizeof(ops) / sizeof(*ops); i++) {
+        if (startswith(p, ops[i]))
+            return ops[i];
+    }
+    return NULL;
+}
+
 Token *tokenize(void) {
     char *p = user_input;
     Token head = {};
@@ -94,9 +112,11 @@ Token *tokenize(void) {
             continue;
         }
 
-        if (startswith(p, "return") && !is_alnum(p[6])) {
-            cur = new_token(TK_RESERVED, cur, p, 6);
-            p += 6;
+        char *kw = starts_with_reserved(p);
+        if (kw) {
+            int len = strlen(kw);
+            cur = new_token(TK_RESERVED, cur, p, len);
+            p += len;
             continue;
         }
 
@@ -106,12 +126,6 @@ Token *tokenize(void) {
                 p++;
             }
             cur = new_token(TK_IDENT, cur, q, p-q);
-            continue;
-        }
-
-        if (startswith(p, "==") || startswith(p, "!=") || startswith(p, "<=") || startswith(p, ">=")) {
-            cur = new_token(TK_RESERVED, cur, p, 2);
-            p += 2;
             continue;
         }
 
