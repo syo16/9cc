@@ -48,7 +48,11 @@ assert 0 '1>=2;'
 
 assert 3 '1; 2; 3;'
 
+assert 3 '{1; {2;} return 3;}'
+
 assert 10 'i=0; while(i<10) i=i+1; return i;'
+assert 55 'i=0; j=0; while(i<=10) {j=i+j; i=i+1} return j;'
+
 assert 55 'i=0; j=0; for (i=0; i<=10; i=i+1) j=i+j; return j;'
 assert 3 'for (;;) return 3; return 5;'
 echo OK
