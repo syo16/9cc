@@ -1,3 +1,4 @@
+#define _GNU_SOURCE
 #include <ctype.h>
 #include <stdarg.h>
 #include <stdbool.h>
@@ -5,6 +6,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+// Token
 typedef enum {
     TK_RESERVED, // Keywords or punctuations
     TK_IDENT, // Identifiers
@@ -34,6 +36,15 @@ Token *tokenize(void);
 extern char *user_input;
 extern Token *token;
 
+// Local variable
+typedef struct Var Var;
+struct Var {
+    Var *next;
+    char *name; // Variable name
+    int offset; // Offset from RBP
+};
+
+// AST node
 typedef enum {
     ND_ADD, // +
     ND_SUB, // -
@@ -57,11 +68,19 @@ struct Node {
     Node *next; // Next node
     Node *lhs; // Left-hand side
     Node *rhs; // Right-hand side
-    char name; // Used if kind == ND_VAR
+    Var *var; // Used if kind == ND_VAR
     long val; // Used if kind == ND_NUM
 };
 
 
-Node *program(void);
+typedef struct Function Function;
+struct Function {
+    Node *node;
+    Var *locals;
+    int stack_size;
+};
 
-void codegen(Node *node);
+Function *program(void);
+
+
+void codegen(Function *prog);
