@@ -94,6 +94,7 @@ struct Node {
 
 
 typedef struct Function Function;
+
 struct Function {
     Node *node;
     Var *locals;
